@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-02-21 23:57:04
+@LastEditTime: 2020-02-21 23:57:06
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /CS224n/Assignment 4/model_embeddings.py
+'''
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -51,6 +59,8 @@ class ModelEmbeddings(nn.Module):
         ###     Embedding Layer:
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Embedding
         
+        self.source = nn.Embedding(len(vocab.src), self.embed_size, src_pad_token_idx)
+        self.target = nn.Embedding(len(vocab.tgt), self.embed_size, tgt_pad_token_idx)
 
         ### END YOUR CODE
 
