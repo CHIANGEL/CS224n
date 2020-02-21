@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-02-21 21:27:56
+@LastEditTime: 2020-02-21 22:01:20
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /CS224n/Assignment 4/utils.py
+'''
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -30,6 +38,8 @@ def pad_sents(sents, pad_token):
 
     ### YOUR CODE HERE (~6 Lines)
 
+    max_length = max([len(sent) for sent in sents])
+    sents_padded = [sent + [pad_token] * (max_length - len(sent)) for sent in sents]
 
     ### END YOUR CODE
 
