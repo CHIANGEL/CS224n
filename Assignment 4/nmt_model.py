@@ -75,8 +75,8 @@ class NMT(nn.Module):
 
         self.encoder = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, bidirectional=True)
         self.decoder = nn.LSTMCell(input_size=embed_size+hidden_size, hidden_size=hidden_size)
-        self.h_projection = nn.Linear(hidden_size, 2 * hidden_size, bias=False)
-        self.c_projection = nn.Linear(hidden_size, 2 * hidden_size, bias=False)
+        self.h_projection = nn.Linear(hidden_size * 2, hidden_size, bias=False)
+        self.c_projection = nn.Linear(hidden_size * 2, hidden_size, bias=False)
         self.att_projection = nn.Linear(hidden_size, 2 * hidden_size, bias=False)
         self.combined_output_projection = nn.Linear(hidden_size, 3 * hidden_size, bias=False)
         self.target_vocab_projection = nn.Linear(len(vocab.tgt), hidden_size, bias=False)
@@ -143,7 +143,7 @@ class NMT(nn.Module):
         ### TODO:
         ###     1. Construct Tensor `X` of source sentences with shape (src_len, b, e) using the source model embeddings.
         ###         src_len = maximum source sentence length, b = batch size, e = embedding size. Note
-        ###         that there is no initial hidden state or cell for the decoder.
+        ###         that there is no initial hidden state or cell for the encoder.
         ###     2. Compute `enc_hiddens`, `last_hidden`, `last_cell` by applying the encoder to `X`.
         ###         - Before you can apply the encoder, you need to apply the `pack_padded_sequence` function to X.
         ###         - After you apply the encoder, you need to apply the `pad_packed_sequence` function to enc_hiddens.
@@ -171,6 +171,14 @@ class NMT(nn.Module):
         ###     Tensor Permute:
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute
 
+        X = self.model_embeddings.source(source_padded)
+        packed_X = pack_padded_sequence(X, torch.Tensor(source_lengths))
+        enc_hiddens, (last_hidden, last_cell) = self.encoder(packed_X)
+        enc_hiddens = pad_packed_sequence(enc_hiddens)[0].permute(1, 0, 2)
+
+        init_decoder_hidden = self.h_projection(torch.cat((last_hidden[0], last_hidden[1]), dim=1))
+        init_decoder_cell = self.c_projection(torch.cat((last_cell[0], last_cell[1]), dim=1))
+        dec_init_state = (init_decoder_hidden, init_decoder_cell)
 
         ### END YOUR CODE
 
